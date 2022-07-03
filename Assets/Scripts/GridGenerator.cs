@@ -8,14 +8,16 @@ using Random = UnityEngine.Random;
 
 public class GridGenerator : MonoBehaviour
 {
-    [SerializeField] private int maxGridSideSize = 12;
-    [SerializeField] private LetterController letterControllerPrefab;
-    [Space]
-    [SerializeField] private TMP_InputField widthInput;
-    [SerializeField] private TMP_InputField heightInput;
-    [Space]
+    [Header("Resize the grid before running if needed")]
     [SerializeField] float widthGrid = 40f;
     [SerializeField] float heightGrid = 40f;
+    [SerializeField] private bool isBorderShowed;
+    [Space]
+    [SerializeField] private int maxLettersCountOnSide = 12;
+    [Space]
+    [SerializeField] private LetterController letterControllerPrefab;
+    [SerializeField] private InputField widthInput;
+    [SerializeField] private InputField heightInput;
     [SerializeField] private Border border;
     private Vector3 gridCenterPosition;
     
@@ -28,9 +30,9 @@ public class GridGenerator : MonoBehaviour
     private void Start()
     {
         gridCenterPosition = transform.position;
-        border.SetBorder(widthGrid, heightGrid);
+        SetBorder();
     }
-
+    
     public void GenerateGrid()
     {
         DeleteAllLetters();
@@ -54,6 +56,23 @@ public class GridGenerator : MonoBehaviour
                 letterControllers[y][x].SetSize(letterDeltaSize);
             }
         }
+    }
+    
+    public void Shuffle()
+    {
+        if (letterControllers == null)
+        {
+            Debug.Log("Grid not exist");
+            return;
+        }
+        ShuffleAllLettersInArray();
+        SetNewPositionToAllLetters();
+    }
+    
+    private void SetBorder()
+    {
+        border.SetBorder(widthGrid, heightGrid);
+        border.SetEnable(isBorderShowed);
     }
 
     Vector3 GetPositionByCoordinates(int x, int y)
@@ -87,7 +106,7 @@ public class GridGenerator : MonoBehaviour
         }
         
         if (heightResult < 1 || widthResult < 1) return false;
-        if(heightResult > maxGridSideSize || widthResult > maxGridSideSize) return false;
+        if(heightResult > maxLettersCountOnSide || widthResult > maxLettersCountOnSide) return false;
         return true;
     }
 
@@ -107,17 +126,6 @@ public class GridGenerator : MonoBehaviour
         letterControllers = null;
     }
 
-    public void Shuffle()
-    {
-        if (letterControllers == null)
-        {
-            Debug.Log("Grid not exist");
-            return;
-        }
-        ShuffleAllLettersInArray();
-        SetNewPositionToAllLetters();
-    }
-
     void SetNewPositionToAllLetters()
     {
         for (int y = 0; y < letterControllers.Length; y++)
@@ -125,7 +133,6 @@ public class GridGenerator : MonoBehaviour
             for (int x = 0; x < letterControllers[y].Length; x++)
             {
                 var letterPosition = GetPositionByCoordinates(y, x);
-                // letterControllers[y][x].transform.position =  letterPosition;
                 letterControllers[y][x].MoveToNewPosition(letterPosition);
             }
         }
